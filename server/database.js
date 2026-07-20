@@ -81,6 +81,26 @@ db.exec(`
     read INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now'))
   );
+
+  CREATE TABLE IF NOT EXISTS github_repos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    repo_url TEXT NOT NULL,
+    name TEXT NOT NULL,
+    description TEXT,
+    language TEXT,
+    stars INTEGER DEFAULT 0,
+    forks INTEGER DEFAULT 0,
+    sort_order INTEGER DEFAULT 0
+  );
+
+  CREATE TABLE IF NOT EXISTS repo_files (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    repo_id INTEGER NOT NULL,
+    filename TEXT NOT NULL,
+    file_url TEXT NOT NULL,
+    sort_order INTEGER DEFAULT 0,
+    FOREIGN KEY (repo_id) REFERENCES github_repos(id) ON DELETE CASCADE
+  );
 `);
 
 const hasProfile = db.prepare("SELECT COUNT(*) as count FROM profile").get();
