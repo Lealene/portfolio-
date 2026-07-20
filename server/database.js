@@ -33,7 +33,8 @@ db.exec(`
     image TEXT,
     description TEXT,
     tags TEXT DEFAULT '[]',
-    link TEXT DEFAULT '#'
+    link TEXT DEFAULT '#',
+    demo_url TEXT DEFAULT ''
   );
 
   CREATE TABLE IF NOT EXISTS skills (
@@ -107,6 +108,11 @@ db.exec(`
 const profileCols = db.prepare("PRAGMA table_info(profile)").all().map(c => c.name);
 if (!profileCols.includes("photo")) {
   db.exec("ALTER TABLE profile ADD COLUMN photo TEXT");
+}
+
+const projectCols = db.prepare("PRAGMA table_info(projects)").all().map(c => c.name);
+if (!projectCols.includes("demo_url")) {
+  db.exec("ALTER TABLE projects ADD COLUMN demo_url TEXT DEFAULT ''");
 }
 
 const hasProfile = db.prepare("SELECT COUNT(*) as count FROM profile").get();

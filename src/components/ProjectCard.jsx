@@ -19,6 +19,7 @@ export default function ProjectCard({ project, index = 0, onDelete, onUpdate, on
     description: project.description,
     tags: project.tags.join(", "),
     link: project.link,
+    demo_url: project.demo_url || "",
   });
   const fileInputRef = useRef(null);
   const { isAuthenticated } = useAuth();
@@ -50,6 +51,7 @@ export default function ProjectCard({ project, index = 0, onDelete, onUpdate, on
       description: project.description,
       tags: project.tags.join(", "),
       link: project.link,
+      demo_url: project.demo_url || "",
     });
     setEditing(false);
   };
@@ -96,10 +98,17 @@ export default function ProjectCard({ project, index = 0, onDelete, onUpdate, on
             className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-indigo-500"
           />
           <input
-            type="text"
-            placeholder="Live Demo Link"
+            type="url"
+            placeholder="Project Link (GitHub repo, etc.)"
             value={form.link}
             onChange={(e) => setForm({ ...form, link: e.target.value })}
+            className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-indigo-500"
+          />
+          <input
+            type="url"
+            placeholder="Live Demo URL (e.g., https://your-app.vercel.app)"
+            value={form.demo_url}
+            onChange={(e) => setForm({ ...form, demo_url: e.target.value })}
             className="w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-indigo-500"
           />
           <div className="flex gap-3 pt-1">
@@ -209,6 +218,7 @@ export default function ProjectCard({ project, index = 0, onDelete, onUpdate, on
                         description: project.description,
                         tags: project.tags.join(", "),
                         link: project.link,
+                        demo_url: project.demo_url || "",
                       });
                       setEditing(true);
                     }}
@@ -256,13 +266,28 @@ export default function ProjectCard({ project, index = 0, onDelete, onUpdate, on
               </div>
             </div>
             <div className="flex gap-3">
-              <a
-                href={project.link}
-                onClick={(e) => e.stopPropagation()}
-                className="inline-flex flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-indigo-500"
-              >
-                Live Demo
-              </a>
+              {project.demo_url && (
+                <a
+                  href={project.demo_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex flex-1 items-center justify-center rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white transition-all hover:bg-indigo-500"
+                >
+                  Live Demo
+                </a>
+              )}
+              {project.link && project.link !== "#" && (
+                <a
+                  href={project.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="inline-flex flex-1 items-center justify-center rounded-xl border border-slate-700 px-4 py-3 text-sm font-semibold text-slate-300 transition-all hover:border-slate-500 hover:text-white"
+                >
+                  Source Code
+                </a>
+              )}
               <button
                 onClick={(e) => {
                   e.stopPropagation();

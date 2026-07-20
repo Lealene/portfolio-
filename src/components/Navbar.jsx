@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, X, LogIn, LogOut } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const navLinks = [
@@ -31,6 +31,17 @@ export default function Navbar() {
     const handleScroll = () => setScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === "A") {
+        e.preventDefault();
+        setShowLogin((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
   }, []);
 
   const handleLogin = async (e) => {
@@ -71,8 +82,8 @@ export default function Navbar() {
               </a>
             </li>
           ))}
-          <li>
-            {isAuthenticated ? (
+          {isAuthenticated && (
+            <li>
               <button
                 onClick={logout}
                 className="flex items-center gap-1 text-sm font-medium text-red-400 transition-colors hover:text-red-300"
@@ -80,26 +91,14 @@ export default function Navbar() {
                 <LogOut className="h-4 w-4" />
                 Logout
               </button>
-            ) : (
-              <button
-                onClick={() => setShowLogin(!showLogin)}
-                className="flex items-center gap-1 text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300"
-              >
-                <LogIn className="h-4 w-4" />
-                Admin
-              </button>
-            )}
-          </li>
+            </li>
+          )}
         </ul>
 
         <div className="flex items-center gap-3 md:hidden">
-          {isAuthenticated ? (
+          {isAuthenticated && (
             <button onClick={logout} className="text-red-400" aria-label="Logout">
               <LogOut className="h-5 w-5" />
-            </button>
-          ) : (
-            <button onClick={() => setShowLogin(!showLogin)} className="text-indigo-400" aria-label="Admin login">
-              <LogIn className="h-5 w-5" />
             </button>
           )}
           <button onClick={() => setIsOpen(!isOpen)} className="text-white" aria-label="Toggle menu">

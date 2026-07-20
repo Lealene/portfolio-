@@ -39,19 +39,19 @@ router.get("/:id", (req, res) => {
 });
 
 router.post("/", requireAuth, (req, res) => {
-  const { title, category, image, description, tags, link } = req.body;
+  const { title, category, image, description, tags, link, demo_url } = req.body;
   const result = db.prepare(
-    "INSERT INTO projects (title, category, image, description, tags, link) VALUES (?, ?, ?, ?, ?, ?)"
-  ).run(title, category, image || null, description || "", JSON.stringify(tags || []), link || "#");
+    "INSERT INTO projects (title, category, image, description, tags, link, demo_url) VALUES (?, ?, ?, ?, ?, ?, ?)"
+  ).run(title, category, image || null, description || "", JSON.stringify(tags || []), link || "#", demo_url || "");
   const project = db.prepare("SELECT * FROM projects WHERE id = ?").get(result.lastInsertRowid);
   res.status(201).json({ ...project, tags: JSON.parse(project.tags) });
 });
 
 router.put("/:id", requireAuth, (req, res) => {
-  const { title, category, image, description, tags, link } = req.body;
+  const { title, category, image, description, tags, link, demo_url } = req.body;
   db.prepare(
-    "UPDATE projects SET title = ?, category = ?, image = ?, description = ?, tags = ?, link = ? WHERE id = ?"
-  ).run(title, category, image || null, description || "", JSON.stringify(tags || []), link || "#", req.params.id);
+    "UPDATE projects SET title = ?, category = ?, image = ?, description = ?, tags = ?, link = ?, demo_url = ? WHERE id = ?"
+  ).run(title, category, image || null, description || "", JSON.stringify(tags || []), link || "#", demo_url || "", req.params.id);
   const project = db.prepare("SELECT * FROM projects WHERE id = ?").get(req.params.id);
   if (!project) return res.status(404).json({ error: "Project not found" });
   res.json({ ...project, tags: JSON.parse(project.tags) });
