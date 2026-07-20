@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Uploads
+server/uploads/*
+!server/uploads/.gitkeep
+
+# Database
+server/*.db
+server/*.db-shm
+server/*.db-wal

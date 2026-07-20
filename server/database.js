@@ -20,6 +20,7 @@ db.exec(`
     bio TEXT,
     email TEXT,
     location TEXT,
+    photo TEXT,
     social_github TEXT,
     social_linkedin TEXT,
     social_twitter TEXT
@@ -103,6 +104,11 @@ db.exec(`
   );
 `);
 
+const profileCols = db.prepare("PRAGMA table_info(profile)").all().map(c => c.name);
+if (!profileCols.includes("photo")) {
+  db.exec("ALTER TABLE profile ADD COLUMN photo TEXT");
+}
+
 const hasProfile = db.prepare("SELECT COUNT(*) as count FROM profile").get();
 if (hasProfile.count === 0) {
   db.prepare(`
@@ -112,7 +118,7 @@ if (hasProfile.count === 0) {
     "Lealene S Fajardo",
     "Full-Stack Developer",
     "I build modern web applications with clean code and intuitive interfaces. Passionate about creating digital experiences that make a difference.",
-    "Passionate about building web applications that solve real-world problems. Skilled in frontend and backend development with a focus on clean, maintainable code.",
+    "Hardworking, adaptable, and detail-oriented Person with foundational knowledge in business processes, information systems, and software development. Experienced in both frontend and backend web development, including React.js, Next.js, Strapi CMS, databases, and API integration. Proficient in using AI-assisted development tools to improve coding efficiency, accelerate learning, assist with debugging, generate documentation, and support software development workflows. Committed to delivering reliable and high-quality results.",
     "alex@example.com",
     "San Francisco, CA",
     "#",

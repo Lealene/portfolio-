@@ -1,29 +1,83 @@
 import { useState, useEffect } from "react";
-import { ArrowDown, Download } from "lucide-react";
+import { ArrowDown, Download, Camera, Trash2, Upload } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 import FloatingTechIcons from "./FloatingTechIcons";
+
+const API = "http://localhost:3001/api";
 
 export default function Hero() {
   const [flipped, setFlipped] = useState(false);
-  const [profile, setProfile] = useState({ name: "Lealene S Fajardo", title: "Full-Stack Developer", tagline: "", bio: "" });
+  const [profile, setProfile] = useState({ name: "Lealene S Fajardo", title: "Full-Stack Developer", tagline: "", bio: "", photo: null });
+  const [resumeInfo, setResumeInfo] = useState({ uploaded: false });
+  const [resumeKey, setResumeKey] = useState(Date.now());
+  const { isAuthenticated, authFetch } = useAuth();
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/profile")
+    fetch(`${API}/profile`)
       .then((res) => res.json())
       .then(setProfile)
       .catch(console.error);
+    fetch(`${API}/resume`)
+      .then((res) => res.json())
+      .then(setResumeInfo)
+      .catch(console.error);
   }, []);
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("photo", file);
+    try {
+      const res = await authFetch(`${API}/profile/photo`, { method: "POST", body: formData });
+      const data = await res.json();
+      setProfile(data);
+    } catch (err) {
+      console.error("Failed to upload photo:", err);
+    }
+  };
+
+  const handlePhotoDelete = async () => {
+    try {
+      const res = await authFetch(`${API}/profile/photo`, { method: "DELETE" });
+      const data = await res.json();
+      setProfile(data);
+    } catch (err) {
+      console.error("Failed to delete photo:", err);
+    }
+  };
+
+  const handleResumeUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append("resume", file);
+    try {
+      const res = await authFetch(`${API}/resume`, { method: "POST", body: formData });
+      const data = await res.json();
+      setResumeInfo(data);
+      setResumeKey(Date.now());
+    } catch (err) {
+      console.error("Failed to upload resume:", err);
+    }
+  };
+
+  const initials = profile.name
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <section
       id="home"
       className="relative flex min-h-screen items-center overflow-hidden bg-slate-950 pt-20"
     >
-      {/* Floating tech icons background */}
       <div className="absolute inset-0">
         <FloatingTechIcons iconCount={26} />
       </div>
 
-      {/* Gradient overlay to keep text readable */}
       <div className="absolute inset-0 bg-gradient-to-b from-slate-950/40 via-transparent to-slate-950" />
 
       <div className="relative z-10 mx-auto w-full max-w-7xl px-5 py-20 md:px-8">
@@ -55,13 +109,25 @@ export default function Hero() {
                 Get In Touch
               </a>
               <a
-                href="http://localhost:3001/api/resume/download"
+                href={`${API}/resume/download?t=${resumeKey}`}
                 download
                 className="inline-flex items-center justify-center gap-2 rounded-xl border border-indigo-500/30 bg-indigo-500/10 px-6 py-3 text-sm font-semibold text-indigo-400 transition-all hover:bg-indigo-500/20 hover:text-indigo-300"
               >
                 <Download className="h-4 w-4" />
                 Download Resume
               </a>
+              {isAuthenticated && (
+                <label className="inline-flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-6 py-3 text-sm font-semibold text-slate-300 transition-all hover:border-slate-500 hover:text-white">
+                  <Upload className="h-4 w-4" />
+                  {resumeInfo.uploaded ? "Replace Resume" : "Upload Resume"}
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    className="hidden"
+                    onChange={handleResumeUpload}
+                  />
+                </label>
+              )}
             </div>
           </div>
 
@@ -73,11 +139,46 @@ export default function Hero() {
             >
               {/* Front */}
               <div className="absolute inset-0 overflow-hidden rounded-2xl border-2 border-slate-700 bg-gradient-to-br from-slate-900 to-slate-950 [backface-visibility:hidden]">
-                <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/10 to-purple-500/10">
-                  <span className="text-6xl font-bold text-white md:text-7xl">
-                    AM
-                  </span>
-                </div>
+                {profile.photo ? (
+                  <img
+                    src={`http://localhost:3001${profile.photo}`}
+                    alt={profile.name}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-indigo-500/10 to-purple-500/10">
+                    <span className="text-6xl font-bold text-white md:text-7xl">
+                      {initials}
+                    </span>
+                  </div>
+                )}
+
+                {/* Admin photo controls */}
+                {isAuthenticated && (
+                  <div
+                    className="absolute top-3 right-3 flex gap-2"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <label className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg bg-black/60 text-white transition-colors hover:bg-black/80">
+                      <Camera className="h-4 w-4" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handlePhotoUpload}
+                      />
+                    </label>
+                    {profile.photo && (
+                      <button
+                        onClick={handlePhotoDelete}
+                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-black/60 text-red-400 transition-colors hover:bg-black/80 hover:text-red-300"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
+
                 <div className="absolute bottom-0 w-full bg-gradient-to-t from-slate-950 to-transparent p-4 text-center">
                   <p className="text-xs text-slate-500">Click to flip &rarr;</p>
                 </div>
